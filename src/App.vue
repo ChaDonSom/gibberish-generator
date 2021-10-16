@@ -1,106 +1,138 @@
 <template>
-  <h1>Generator</h1>
-  <button @click="generate" class="bg-green-700 text-white p-2 px-3 rounded-full">Generate</button>
-  <p id="blurb" class="grid grid-flow-col auto-cols-max" :class="{
-    [`grid-cols-${words.length}`]: words.length
-  }">
-    <span v-for="word of words" :key="word.word">{{ word.word }}&nbsp;</span>
-  </p>
-  <p id="info" class="grid grid-flow-col auto-cols-max" :class="{
-    [`grid-cols-${wordSlots.length}`]: wordSlots.length
-  }">
-    <span v-for="slot of wordSlots" :key="slot.partOfSpeech"
-      >{{ slot.partOfSpeech }}&nbsp;</span
+  <div class="flex flex-col justify-center p-5">
+    <h1>Generator</h1>
+    <button @click="generate" class="fixed bottom-4 right-4 bg-green-700 hover:bg-green-500 text-white p-2 px-3 rounded-full m-auto">Generate</button>
+    <draggable
+        v-model="wordSlotsArray"
+        item-key="id"
+        class="flex flex-wrap gap-5 my-2"
+        tag="div"
+        ghost-class="ghost"
+        :animation="200"
+        @start="drag = true"
+        @end="drag = false"
     >
-  </p>
+      <template #item="{ element }">
+        <div class="rounded-md bg-gray-200 p-5 cursor-move">
+          <p>{{ element.word?.word }}</p>
+          <p>{{ element.partOfSpeech }}</p>
+          <div class="flex flex-row-reverse">
+            <button
+                class="hover:bg-gray-300 text-red-500 rounded-full h-12 w-12 flex items-center justify-center"
+                @click="remove(element)"
+            >
+              <i class="material-icons">delete</i>
+            </button>
+          </div>
+        </div>
+      </template>
+    </draggable>
+    <div class="rounded-md bg-gray-200 p-5 flex gap-2">
+      <select v-model="selectedPart">
+        <option v-for="part of partsOfSpeech" :key="part">{{ part }}</option>
+      </select>
+      <button
+          class="hover:bg-gray-300 active:bg-gray-400 rounded-full h-12 w-12 flex items-center justify-center"
+          @click="add(selectedPart)"
+      >
+        <i class="material-icons">add</i>
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from "@vue/reactivity";
-import axios from "axios";
+import { computed, reactive, ref } from "@vue/reactivity"
+import axios from "axios"
+import Draggable from 'vuedraggable'
 
-const wordSlots = ref([
-  { partOfSpeech: 'noun' },
-  { partOfSpeech: 'pronoun' },
-  { partOfSpeech: 'verb' },
-  { partOfSpeech: 'adverb' },
-  { partOfSpeech: 'adjective' },
-  { partOfSpeech: 'preposition' },
-  { partOfSpeech: 'conjunction' }
+const partsOfSpeech = ref([
+  'noun',
+  'pronoun',
+  'verb',
+  'adverb',
+  'adjective',
+  'preposition',
+  'conjunction'
 ])
-const words = ref([]);
+const selectedPart = ref("")
+const wordSlots = reactive({
+  1: { id: 1, partOfSpeech: 'noun',        word: {}, response: null, order: 1 },
+  2: { id: 2, partOfSpeech: 'pronoun',     word: {}, response: null, order: 2 },
+  3: { id: 3, partOfSpeech: 'verb',        word: {}, response: null, order: 3 },
+  4: { id: 4, partOfSpeech: 'adverb',      word: {}, response: null, order: 4 },
+  5: { id: 5, partOfSpeech: 'adjective',   word: {}, response: null, order: 5 },
+  6: { id: 6, partOfSpeech: 'preposition', word: {}, response: null, order: 6 },
+  7: { id: 7, partOfSpeech: 'conjunction', word: {}, response: null, order: 7 }
+})
+const wordSlotsArray = computed({
+  get: () => Object.values(wordSlots).sort((a, b) => a.order - b.order),
+  set: v  => {
+    for (let i = 0; i < v.length; i++) {
+      wordSlots[v[i].id] = {
+        ...v[i],
+        order: i
+      }
+    }
+  }
+})
+const drag = ref(false)
+
+function add(part) {
+  wordSlots[wordSlotsArray.value.length + 1] = {
+    id: wordSlotsArray.value.length + 1,
+    partOfSpeech: part,
+    word: {},
+    response: null,
+    order: wordSlotsArray.value.length + 1,
+  }
+}
+
+function remove(slot) {
+  delete wordSlots[slot.id]
+}
 
 async function generate() {
-  const total = wordSlots.value.length;
+  const keys = Object.keys(wordSlots)
 
-  let responses = [];
-  // let partsOfSpeech = [
-  //   "preposition",
-  //   "conjunction",
-  //   "noun",
-  //   "pronoun",
-  //   "verb",
-  //   "adverb",
-  //   "adjective",
-  // ];
-  for (let i = 0; i < total; i++) {
-    responses.push(
-      axios.request({
-        method: "GET",
-        url: "https://wordsapiv1.p.rapidapi.com/words/",
-        headers: {
-          "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-          "x-rapidapi-key":
-            "c79abe840bmsh5c471bf03d34f87p1c21a5jsn0ebeca62307f",
-        },
-        params: {
-          random: true,
-          partOfSpeech: wordSlots.value[i].partOfSpeech,
-            // partsOfSpeech[Math.floor(Math.random() * partsOfSpeech.length)],
-          hasDetails: "definitions",
-        },
-      })
-    );
+  for (let key of keys) {
+    wordSlots[key].response = await axios.request({
+      method: "GET",
+      url: "https://wordsapiv1.p.rapidapi.com/words/",
+      headers: {
+        "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        "x-rapidapi-key": process.env.VUE_APP_WORDS_API_KEY,
+      },
+      params: {
+        random: true,
+        partOfSpeech: wordSlots[key].partOfSpeech,
+          // partsOfSpeech[Math.floor(Math.random() * partsOfSpeech.length)],
+        hasDetails: "definitions",
+      },
+    })
   }
 
-  responses = await Promise.all(responses);
+  // await Promise.all(Object.values(wordSlots).map(slot => slot.response))
+    // .then(results => ) // lost it in Promise.all
 
-  console.log(responses);
-
-  let wordOrder = {
-    pronoun: 2,
-    adjective: 3,
-    adverb: 4,
-    verb: 5,
-    noun: 6,
-  };
-  let sorted = responses
-    .sort(() => Math.random() - 0.5)
-    .map(({ data }) => data)
-    .sort((a, b) => {
-      let partA = wordOrder[a.results?.[0]?.partOfSpeech];
-      let partB = wordOrder[b.results?.[0]?.partOfSpeech];
-      if (partA === undefined) return Math.random() - 0.5;
-      if (partB === undefined) return Math.random() - 0.5;
-      if (partA > partB) return 1;
-      if (partB > partA) return -1;
-      return 0;
-    });
-
-  words.value = sorted.map((data) => ({
-    word: data.word,
-    partOfSpeech: data.results[0]?.partOfSpeech,
-  }));
+  for (let key of Object.keys(wordSlots)) {
+    let response = wordSlots[key].response
+    let data = response?.data
+    wordSlots[key].word = {
+      word: data?.word,
+      partOfSpeech: data?.results?.[0]?.partOfSpeech,
+    }
+  }
 }
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style scoped>
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+.slide-move {
+  transition: transform 0.5s;
+}
+.ghost {
+  opacity: 0.5;
 }
 </style>
