@@ -1,12 +1,16 @@
 <template>
   <h1>Generator</h1>
   <button @click="generate" class="bg-green-700 text-white p-2 px-3 rounded-full">Generate</button>
-  <p id="blurb" class="grid grid-cols-5 grid-flow-col auto-cols-max">
+  <p id="blurb" class="grid grid-flow-col auto-cols-max" :class="{
+    [`grid-cols-${words.length}`]: words.length
+  }">
     <span v-for="word of words" :key="word.word">{{ word.word }}&nbsp;</span>
   </p>
-  <p id="info" class="grid grid-cols-5 grid-flow-col auto-cols-max">
-    <span v-for="word of words" :key="word.word"
-      >{{ word.partOfSpeech }}&nbsp;</span
+  <p id="info" class="grid grid-flow-col auto-cols-max" :class="{
+    [`grid-cols-${wordSlots.length}`]: wordSlots.length
+  }">
+    <span v-for="slot of wordSlots" :key="slot.partOfSpeech"
+      >{{ slot.partOfSpeech }}&nbsp;</span
     >
   </p>
 </template>
@@ -15,21 +19,30 @@
 import { ref } from "@vue/reactivity";
 import axios from "axios";
 
+const wordSlots = ref([
+  { partOfSpeech: 'noun' },
+  { partOfSpeech: 'pronoun' },
+  { partOfSpeech: 'verb' },
+  { partOfSpeech: 'adverb' },
+  { partOfSpeech: 'adjective' },
+  { partOfSpeech: 'preposition' },
+  { partOfSpeech: 'conjunction' }
+])
 const words = ref([]);
 
 async function generate() {
-  const total = 5;
+  const total = wordSlots.value.length;
 
   let responses = [];
-  let partsOfSpeech = [
-    "preposition",
-    "conjunction",
-    "noun",
-    "pronoun",
-    "verb",
-    "adverb",
-    "adjective",
-  ];
+  // let partsOfSpeech = [
+  //   "preposition",
+  //   "conjunction",
+  //   "noun",
+  //   "pronoun",
+  //   "verb",
+  //   "adverb",
+  //   "adjective",
+  // ];
   for (let i = 0; i < total; i++) {
     responses.push(
       axios.request({
@@ -42,8 +55,8 @@ async function generate() {
         },
         params: {
           random: true,
-          partOfSpeech:
-            partsOfSpeech[Math.floor(Math.random() * partsOfSpeech.length)],
+          partOfSpeech: wordSlots.value[i].partOfSpeech,
+            // partsOfSpeech[Math.floor(Math.random() * partsOfSpeech.length)],
           hasDetails: "definitions",
         },
       })
