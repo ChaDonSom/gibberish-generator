@@ -13,60 +13,66 @@
         @end="drag = false"
     >
       <template #item="{ element }">
-        <div class="rounded-md bg-gray-200 p-5 transition-all" :class="{
+        <div class="rounded-md bg-gray-200 transition-all flex flex-col" :class="{
           'filter blur-sm grayscale': element.loading
         }">
-          <p class="italic text-gray-500 text-sm cursor-move handle">{{ element.partOfSpeech }}</p>
-          <p v-if="!element.editing" class="handle">{{ element.word?.word }}</p>
-          <input
-              ref="editingWordInput"
-              v-if="element.editing"
-              v-model="editingWord"
-              @change="change(element)"
-              @blur="element.editing = false"
-          />
-          <div class="flex flex-row-reverse cursor-move pt-2">
-            <button
-                class="hover:bg-gray-300 text-red-500 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
-                @click="remove(element)"
-            >
-              <i class="material-icons">delete</i>
-            </button>
-            <button v-if="element.word?.word"
-                title="Search google"
-                class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
-                @click="search(element.word?.word)"
-            >
-              <i class="material-icons">manage_search</i>
-            </button>
-            <button v-if="element.word?.word && element.response?.data?.results?.[0]?.synonyms"
-                title="Switch to a synonym"
-                class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
-                @click="switchToSynonym(element.id)"
-            >
-              <i class="material-icons">unfold_more</i>
-            </button>
-            <button v-if="element.word?.word"
-                title="Edit"
-                class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
-                @click="edit(element)"
-            >
-              <i class="material-icons">edit</i>
-            </button>
-            <button v-if="element.word?.word"
-                title="Retry"
-                class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
-                @click="retry(element)"
-            >
-              <i class="material-icons">refresh</i>
-            </button>
-            <button v-if="!element.word?.word && element.partOfSpeech"
-                title="Fill"
-                class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
-                @click="retry(element)"
-            >
-              <i class="material-icons">navigate_next</i>
-            </button>
+          <div class="handle flex-grow">
+            <div class="p-5">
+              <p class="italic text-gray-500 text-sm cursor-move">{{ element.partOfSpeech }}</p>
+              <p v-if="!element.editing">{{ element.word?.word }}</p>
+            </div>
+          </div>
+          <div class="m-5 mt-0">
+            <input
+                ref="editingWordInput"
+                v-if="element.editing"
+                v-model="editingWord"
+                @change="change(element)"
+                @blur="element.editing = false"
+            />
+            <div class="flex flex-row-reverse cursor-move pt-2">
+              <button
+                  class="hover:bg-gray-300 text-red-500 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
+                  @click="remove(element)"
+              >
+                <i class="material-icons">delete</i>
+              </button>
+              <button v-if="element.word?.word"
+                  title="Search google"
+                  class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
+                  @click="search(element.word?.word)"
+              >
+                <i class="material-icons">manage_search</i>
+              </button>
+              <button v-if="element.word?.word && element.response?.data?.results?.[0]?.synonyms"
+                  title="Switch to a synonym"
+                  class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
+                  @click="switchToSynonym(element.id)"
+              >
+                <i class="material-icons">unfold_more</i>
+              </button>
+              <button v-if="element.word?.word"
+                  title="Edit"
+                  class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
+                  @click="edit(element)"
+              >
+                <i class="material-icons">edit</i>
+              </button>
+              <button v-if="element.word?.word"
+                  title="Retry"
+                  class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
+                  @click="retry(element)"
+              >
+                <i class="material-icons">refresh</i>
+              </button>
+              <button v-if="!element.word?.word && element.partOfSpeech"
+                  title="Fill"
+                  class="hover:bg-gray-300 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
+                  @click="retry(element)"
+              >
+                <i class="material-icons">navigate_next</i>
+              </button>
+            </div>
           </div>
         </div>
       </template>
