@@ -72,7 +72,7 @@
           class="hover:bg-gray-300 active:bg-gray-400 rounded-full h-12 w-12 flex items-center justify-center ml-auto"
           @click="copy"
       >
-        <i class="material-icons">content_copy</i>
+        <i class="material-icons">{{ copyIcon }}</i>
       </button>
     </div>
     <div class="rounded-md bg-gray-200 p-5 flex gap-2 my-2">
@@ -262,8 +262,11 @@ async function generate() {
   }
 }
 
+const copyIcon = ref("content_copy")
 async function copy() {
   await navigator.clipboard?.writeText?.(`${wordsJoined.value[0].toUpperCase()}${wordsJoined.value.slice(1)}.`)
+  copyIcon.value = "check"
+  setTimeout(() => copyIcon.value = "content_copy", 1500)
 }
 </script>
 
