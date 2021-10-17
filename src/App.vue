@@ -7,6 +7,7 @@
         class="flex flex-wrap gap-5 my-2"
         tag="div"
         ghost-class="ghost"
+        handle=".handle"
         :animation="200"
         @start="drag = true"
         @end="drag = false"
@@ -15,9 +16,15 @@
         <div class="rounded-md bg-gray-200 p-5 transition-all" :class="{
           'filter blur-sm grayscale': element.loading
         }">
-          <p class="italic text-gray-500 text-sm cursor-move">{{ element.partOfSpeech }}</p>
-          <p v-if="!element.editing">{{ element.word?.word }}</p>
-          <input v-if="element.editing" v-model="editingWord" @change="change(element)" ref="editingWordInput" />
+          <p class="italic text-gray-500 text-sm cursor-move handle">{{ element.partOfSpeech }}</p>
+          <p v-if="!element.editing" class="handle">{{ element.word?.word }}</p>
+          <input
+              ref="editingWordInput"
+              v-if="element.editing"
+              v-model="editingWord"
+              @change="change(element)"
+              @blur="element.editing = false"
+          />
           <div class="flex flex-row-reverse cursor-move pt-2">
             <button
                 class="hover:bg-gray-300 text-red-500 rounded-full h-12 w-12 flex items-center justify-center cursor-pointer"
