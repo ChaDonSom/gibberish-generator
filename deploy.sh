@@ -1,7 +1,7 @@
 #!/bin/bash
 
-sed -i 's/\/js/js/' ./dist/index.html
-sed -i 's/\/css/css/' ./dist/index.html
+sed -i 's/\/js/js/g' ./dist/index.html
+sed -i 's/\/css/css/g' ./dist/index.html
 
 git add .
 
